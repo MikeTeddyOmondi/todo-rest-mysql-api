@@ -1,0 +1,49 @@
+version: "3.6"
+
+services:
+  api:
+    container_name: todo-rest-mysql-api
+    image: ranckosolutionsinc/todo-rest-mysql-api:v1.0.0
+    build: ./
+    restart: always
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+    env_file:
+      - ./.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/logs:ro
+    networks:
+      - todo-network
+    depends_on:
+      - db
+
+  db:
+    container_name: todo-rest-mysql-db
+    image: mysql:8.0
+    # cap_add:
+    #   - SYS_NICE
+    restart: always
+    environment:
+      - MYSQL_DATABASE=todo-react-zustand-api
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    # ports:
+    #   - '3306:3306'
+    networks:
+      - todo-network
+    volumes:
+      - db:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db:
+    driver: local
+  todo-rest-mysql-api-logs:
+    driver: local
+
+networks:
+  todo-network:
+    name: todo-network
+    driver: bridge
